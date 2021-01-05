@@ -10,13 +10,18 @@ export default new Vuex.Store({
   state: {
     products: [],
     cart:[], 
-    checkoutError: false
+    checkoutError: false,
+    selectProduct:{}
   },
 
   mutations: {
 
     setProducts(state , products){
       state.products = products
+    },
+
+    setSelectProduct(state,product){
+      state.selectProduct = product
     },
 
     incrementProductQuantity(state,item){
@@ -142,6 +147,10 @@ export default new Vuex.Store({
         (total, current) => total + current.price * current.quantity,
         0
       );
+    },
+
+    selectProduct(state){
+      return state.selectedProduct
     }
 
   },

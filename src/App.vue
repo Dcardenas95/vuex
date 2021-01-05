@@ -4,18 +4,21 @@
     <ListProduct/>
     <hr>
     <Shoping/>
+    <ListEdit/>
   </div>
 </template>
 
 <script>
 import ListProduct from '@/components/ListProduct.vue'
 import Shoping from '@/components/Shoping.vue'
+import ListEdit from '@/components/ListEdit.vue'
 
 
 export default {
   name: 'App',
   components: {
     ListProduct,
+    ListEdit,
     Shoping
   }
 }

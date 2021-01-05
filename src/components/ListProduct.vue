@@ -2,7 +2,7 @@
 <div>
     <h1>Lista de productos</h1>
     <ul>
-        <li v-for="(product, $index) in listproducts" :key="$index">
+        <li @click="selectProduct(product)" v-for="(product, $index) in listproducts" :key="$index">
             {{ product.title }} - {{ product.price }} - {{product.inventory}}
             <button @click="addToCart(product)">Comprar</button>
         </li>
@@ -23,8 +23,11 @@ async created() {
 },
 
 methods: {
-    addToCart(product) {
+    addToCart(product){
         this.$store.dispatch("addProductToCart", product);
+    },
+    selectProduct(product){
+        this.$store.commit('setSelectProduct', product)
     }
 },
 
