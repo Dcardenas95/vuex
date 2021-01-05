@@ -9,15 +9,17 @@ export default new Vuex.Store({
   
   state: {
     products: [],
-    carts:[]
+    cart:[], 
+    checkoutError: false
   },
 
   mutations: {
+
     setProducts(state , products){
       state.products = products
     },
 
-    incrementProductQuantity(item){
+    incrementProductQuantity(state,item){
       item.quantity++
     },
 
@@ -28,8 +30,25 @@ export default new Vuex.Store({
       })
     },
 
-    decrementProductInventory(product){
+    decrementProductInventory(state,product){
       product.inventory--
+    },
+
+    incrementProductInventory(state, item) {
+      const product = state.products.find(product => product.id === item.id);
+      product.inventory += item.quantity;
+    },
+
+    removeProductFromCart(state,index){
+      state.cart.splice(index,1)
+    },
+
+    emptyCart(state) {
+      state.cart = [];
+    },
+
+    setCheckoutError(state, error) {
+      state.checkoutError = error;
     }
 
   },
@@ -50,7 +69,7 @@ export default new Vuex.Store({
 
       // existe ya en el  carrito ?
       const item = context.state.cart.find(item => item.id === product.id)
-      console.log(item);
+      
       
 
       // si es asi  , add uno mas a la compra 
@@ -66,15 +85,63 @@ export default new Vuex.Store({
 
       context.commit('decrementProductInventory',product)
 
+    },
+
+    removeProductFromCart(context ,index){
+
+      const item = context.state.cart[index]
+
+      // eliminar el producto del 
+      context.commit('removeProductFromCart',index)
+
+
+      // restaurar el inventario
+      context.commit('incrementProductInventory',item)
+
+
+    },
+
+    checkout({ commit, state }) {
+      api.buyProducts(
+        state.cart,
+        () => {
+          // Vaciar el carrito
+          commit("emptyCart");
+
+          // Establecer que no hay errores
+          commit("setCheckoutError", false);
+        },
+        () => {
+          // Establerce que hay errores
+          commit("setCheckoutError", true);
+        }
+      );
     }
   },
 
   getters: {
-
     productsOnStock(state){
       return state.products.filter(product => {
           return product.inventory>0
       })
+    },
+
+    productsOnCart(state) {
+      return state.cart.map(item => {
+        const product = state.products.find(product => product.id === item.id);
+        return {
+          title: product.title,
+          price: product.price,
+          quantity: item.quantity
+        };
+      });
+    },
+
+    cartTotal(state, getters) {
+      return getters.productsOnCart.reduce(
+        (total, current) => total + current.price * current.quantity,
+        0
+      );
     }
 
   },
