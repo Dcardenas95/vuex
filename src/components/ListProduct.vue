@@ -2,7 +2,10 @@
 <div>
     <h1>Lista de productos</h1>
     <ul>
-        <li @click="selectProduct(product)" v-for="(product, $index) in listproducts" :key="$index">
+        <li 
+        :class="{'sold-out': $store.getters.nearlySouldOut(product.id)}"
+        @click="selectProduct(product)" 
+        v-for="(product, $index) in listproducts" :key="$index">
             {{ product.title }} - {{ product.price }} - {{product.inventory}}
             <button @click="addToCart(product)">Comprar</button>
         </li>
@@ -39,3 +42,11 @@ computed: {
 
 };
 </script>
+<style scoped>
+    .sold-out {
+        background-color: lightpink;
+        border: 3px solid tomato;
+        padding: 0.3rem;
+        margin: 0.1rem;
+    }
+</style>

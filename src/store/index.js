@@ -1,56 +1,24 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import api from '@/api/shop.js'
+import cart from "./cart.js";
+import product from "./product.js";
 
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-  
+
+  modules: {
+    cart,
+    product
+  },
+
   state: {
-    products: [],
-    cart:[], 
     checkoutError: false,
-    selectProduct:{}
   },
 
   mutations: {
-
-    setProducts(state , products){
-      state.products = products
-    },
-
-    setSelectProduct(state,product){
-      state.selectProduct = product
-    },
-
-    incrementProductQuantity(state,item){
-      item.quantity++
-    },
-
-    addProductToCart(state,product){
-      state.cart.push({
-        id:product.id,
-        quantity:1
-      })
-    },
-
-    decrementProductInventory(state,product){
-      product.inventory--
-    },
-
-    incrementProductInventory(state, item) {
-      const product = state.products.find(product => product.id === item.id);
-      product.inventory += item.quantity;
-    },
-
-    removeProductFromCart(state,index){
-      state.cart.splice(index,1)
-    },
-
-    emptyCart(state) {
-      state.cart = [];
-    },
 
     setCheckoutError(state, error) {
       state.checkoutError = error;
@@ -59,60 +27,16 @@ export default new Vuex.Store({
   },
 
   actions: {
-    getProducts({commit}){
-      return new Promise((resolve) => {
-        api.getProducts(products => {
-          commit('setProducts',products)
-          resolve()
-      })
-      })
-    },
 
-    addProductToCart(context , product) {
-      // hay inventaro de ese producto ?
-      if(product.inventory === 0) return
-
-      // existe ya en el  carrito ?
-      const item = context.state.cart.find(item => item.id === product.id)
-      
-      
-
-      // si es asi  , add uno mas a la compra 
-      if(item){
-        context.commit('incrementProductQuantity',item)
-      }
-
-      // si no es asi , add el producto al carrito
-      else{
-        context.commit('addProductToCart',product)
-      }
-      // independiente , restar al inventario de ese producto
-
-      context.commit('decrementProductInventory',product)
-
-    },
-
-    removeProductFromCart(context ,index){
-
-      const item = context.state.cart[index]
-
-      // eliminar el producto del 
-      context.commit('removeProductFromCart',index)
-
-
-      // restaurar el inventario
-      context.commit('incrementProductInventory',item)
-
-
-    },
-
-    checkout({ commit, state }) {
+    checkout({
+      commit,
+      state
+    }) {
       api.buyProducts(
-        state.cart,
+        state.cart.cart,
         () => {
           // Vaciar el carrito
           commit("emptyCart");
-
           // Establecer que no hay errores
           commit("setCheckoutError", false);
         },
@@ -122,40 +46,14 @@ export default new Vuex.Store({
         }
       );
     }
+
+
   },
 
   getters: {
-    productsOnStock(state){
-      return state.products.filter(product => {
-          return product.inventory>0
-      })
-    },
 
-    productsOnCart(state) {
-      return state.cart.map(item => {
-        const product = state.products.find(product => product.id === item.id);
-        return {
-          title: product.title,
-          price: product.price,
-          quantity: item.quantity
-        };
-      });
-    },
-
-    cartTotal(state, getters) {
-      return getters.productsOnCart.reduce(
-        (total, current) => total + current.price * current.quantity,
-        0
-      );
-    },
-
-    selectProduct(state){
-      return state.selectedProduct
-    }
 
   },
-  
-  modules: {
-  }
+
 
 })
